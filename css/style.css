@@ -1,0 +1,434 @@
+html, body {
+    margin: 0;
+    font-family: system-ui;
+}
+
+.body_wrapper {
+    clear: both;
+    overflow: hidden;
+    display: flex;
+}
+
+header {
+    background-color: #000;
+    text-align: center;
+    height: 80px;
+}
+
+input, textarea {
+    border: 2px solid #666;
+    padding: 6px;
+    border-radius: 4px;
+    margin: 4px 0px;
+    width: 275px;
+}
+
+select {
+    border: 2px solid #666;
+    padding: 6px;
+    border-radius: 4px;
+    margin: 4px 0px;
+    width: 275px;
+}
+
+input[type="date"], textarea {
+    font-family: system-ui;
+}
+
+input[type="checkbox"] {
+    width: 20px;
+}
+
+aside {
+    background-color: #e6e6e6;
+    width: 225px;
+    float: left;
+    min-height: calc(100vh - 80px);
+}
+
+aside ul {
+    padding-left: 20px;
+}
+
+aside li {
+    list-style: none;
+    padding: 6px 0px;
+}
+
+aside ul li a {
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+}
+
+aside ul li a:hover {
+    color: #006600;
+}
+
+main {
+    float: left;
+    width: calc(100% - 245px);
+    padding: 30px;
+}
+
+.span_heading {
+    font-weight: 600;
+    font-size: 20px;
+}
+
+.action_btn {
+    border: 0;
+    background-color: #666;
+    padding: 6px 9px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 4px;
+}
+
+.ml-5 {
+ margin-left : 5px
+}
+
+.action_btn:hover {
+    background-color: #444;
+}
+
+.location_action_form {
+    margin-top: 16px;
+}
+
+.locations table {
+    margin-top: 14px;
+}
+
+.locations table tr td {
+    padding: 4px 8px;
+}
+
+.ktm_table {
+    border-collapse: collapse;
+}
+
+.ktm_table th {
+    color: #333;
+    font-weight: 500;
+}
+
+.ktm_table th, .ktm_table td {
+    padding: 4px;
+    border: 1px solid #bbb;
+    text-align: center;
+}
+
+.employees table {
+    margin-top: 14px;
+}
+
+#employee-action-form {
+    margin-top: 20px;
+}
+
+#employee-action-form .action_btn {
+    margin-top: 6px;
+}
+
+.employees .ktm_table th {
+    padding: 8px;
+    background-color: #eee;
+}
+
+.employees .ktm_table td:nth-child(3) {
+    word-break: break-all;
+}
+
+.cashiers table {
+    margin-top: 14px;
+}
+
+#cashier-action-form {
+    margin-top: 20px;
+}
+
+#cashier-action-form .action_btn {
+    margin-top: 6px;
+}
+
+.cashiers .ktm_table th {
+    padding: 8px;
+    background-color: #eee;
+}
+
+.payment-methods table {
+    margin-top: 14px;
+}
+
+#payment_method_action_form {
+    margin-top: 20px;
+}
+
+#payment_method_action_form .action_btn {
+    margin-top: 6px;
+}
+
+.services table {
+    margin-top: 14px;
+}
+
+#service_action_form {
+    margin-top: 20px;
+}
+
+#service_action_form .action_btn {
+    margin-top: 6px;
+}
+
+#wage-filter {
+    margin-top: 14px;
+}
+
+#wage-filter label {
+    font-weight: 500;
+}
+
+#wage-filter select {
+    width: 125px;
+}
+
+.wage-filter button {
+    margin-top: 14px;
+}
+
+#sales-data-filter {
+    margin-top: 14px;
+}
+
+#sales-data-filter label {
+    font-weight: 500;
+}
+
+#sales-data-filter input {
+    width: 150px;
+}
+
+#get_sales_report {
+    margin-top: 14px;
+}
+
+#working-details {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+#working_details_form{
+    margin-top: 20px;
+}
+
+#working-details div {
+    width: 30%;
+    background-color: #f1f1f1;
+    padding: 1%;
+    float: left;
+    margin: 0 0 1% 1%;
+}
+
+#working-details div:nth-child(3n + 1) {
+    margin-left: 0;
+}
+
+#working-details button {
+    margin-top: 12px;
+    margin-bottom: 6px;
+}
+
+
+#cashier-report-action-form {
+    margin-top: 20px;
+}
+
+.employees input[type="date"]:before, .cashiers input[type="date"]:before {
+    content: "DOB:-";
+}
+
+.cashiers-daily-report table {
+    margin-top: 14px;
+}
+
+.pagination {
+    text-align: center;
+    margin-top: 16px;
+}
+
+.pagination button {
+    margin-left: 5px;
+    font-size: 12px;
+    background-color: #666;
+    color: #fff;
+    border: none;
+    outline: 0;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.pagination button:first-child {
+    margin-left: 0;
+}
+
+.pagination button:hover, .pagination button.active {
+    background-color: #333;
+}
+
+#login-panel {
+    width: 600px;
+    margin: 60px auto;
+    text-align: center;
+}
+
+.user-type {
+    background-color: #ccc;
+    border: none;
+    padding: 10px 30px;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+#password_ask {
+    margin-top: 30px;
+}
+
+#password_ask button {
+    padding: 8px;
+    background-color: #666;
+    border: none;
+    border-radius: 4px;
+    color: #fff;
+    margin-top: 8px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+#password_ask button:hover {
+    padding: 8px;
+    background-color: #555;
+    border: none;
+    border-radius: 4px;
+    color: #fff;
+    margin-top: 8px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+#login-panel .active {
+    background-color: #777;
+    color: #fff;
+}
+
+.cashiers-daily-report .pagination {
+    text-align: left;
+    margin-top: 16px;
+}
+
+.sales-data .total_amount, .wages-data .total_amount {
+    width: 96%;
+    background-color: #ddd;
+    padding: 1%;
+}
+
+.sales-data .total_amount h3, .wages-data .total_amount h3{
+    margin-top: 0px;
+    margin-bottom: 10px;
+}
+
+.wage-filter {
+    width: 33.33%;
+    float: left;
+}
+
+.wage-filter-wrapper {
+    clear: both;
+    overflow: hidden;
+}
+
+#filter_cashier_daily_wage, #filter_working_details {
+    width: 30px;
+    position: relative;
+    top: 9px;
+    left: 9px;
+    cursor: pointer;
+    filter: opacity(0.35);
+}
+
+#cdw-filter {
+    background-color: #eee;
+    margin-top: 16px;
+    padding: 10px 20px;
+    width: fit-content;
+    display: none;
+}
+
+#cdw-filter input, #cdw-filter select {
+    width: 150px;
+}
+
+#cdw-filter button {
+    padding: 8px;
+}
+
+#filter_cashier_daily_wage.fbtn-act {
+    filter: opacity(1);
+}
+
+#cdw-filter.cdw-filter-act {
+    display: block;
+}
+
+
+/************working details start *****************/
+
+
+#cdw-filter-working-details {
+    background-color: #eee;
+    margin-top: 16px;
+    padding: 10px 20px;
+    width: fit-content;
+    display: none;
+}
+
+#cdw-filter-working-details input, #cdw-filter-working-details select {
+    width: 150px;
+}
+
+#cdw-filter-working-details button {
+    padding: 8px;
+}
+
+#filter_cashier_daily_wage.fbtn-act {
+    filter: opacity(1);
+}
+
+#cdw-filter-working-details.cdw-filter-act {
+    display: block;
+}
+
+.view_doc_btn {
+    border: 0;
+    background-color: #666;
+    padding: 6px 9px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 13px;
+    text-decoration: none;
+    border-radius: 4px;
+    margin-left: 5px;
+    margin-top: 12px;
+    display: inline-block;
+}.view_green_btn {    border: 0;    background-color: #008000;    padding: 6px 9px;    color: #fff;    cursor: pointer;    font-size: 13px;    text-decoration: none;    border-radius: 6px;    margin-left: 7px;}
+
+#treatment_note_form input[type="radio"] {
+    width: auto;
+    margin: 6px;
+}
