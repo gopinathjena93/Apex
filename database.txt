@@ -1,0 +1,5 @@
+15.05.2024
+==================
+alter table employees add column status TINYINT(1) default 0 comment '0 - inactive 1 - active' after commission_rate_masseuse;
+
+alter table pay_deduction add column pay_deduction_remarks varchar(255) default null after pay_deduction_percentage;

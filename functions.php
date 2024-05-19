@@ -33,7 +33,7 @@ if($do_action == "update_configuration") {
 // Location Section
 if ($do_action == "add_location") {
 	$address = $data->address;
-	$sql = "INSERT INTO locations (address) VALUES ('$addgettyperess')";
+	$sql = "INSERT INTO locations (address) VALUES ('$address')";
 	$result = $conn->query($sql);
 	$conn->close();
 }
@@ -53,6 +53,8 @@ if ($do_action == "delete_location") {
 	$result = $conn->query($sql);
 	$conn->close();
 }
+
+
 // Employee Section
 	if ($do_action == "add_employee") {
 		$name = trim($data->name);
@@ -76,7 +78,7 @@ if ($do_action == "delete_location") {
 	}
 
 	if ($do_action == "show_employees") {
-		$sql = "SELECT * FROM employees";
+		$sql = "select * from employees order by name asc";
 		$employees_array = array();
 		$result = $conn->query($sql);
 		if ($result) {
@@ -119,6 +121,13 @@ if ($do_action == "delete_location") {
 		$sql = "UPDATE employees SET password='$hashedPassword', nickname='$nickname', email='$email', phone='$phone', address='$address', sin='$sin', hst='$hst', basic_payment='$basic_payment', commission_rate='$commission_rate',commission_rate_masseuse='$commission_rate_masseuse', commission_after='$commission_after'  WHERE id='$employee_id'";
 
 		$result = $conn->query($sql);
+		$conn->close();
+	}
+	if ($do_action == "update_employee_status") {
+		$status = $data->status;
+		$id = $data->id;
+		$status_sql = "UPDATE employees SET status='$status' where id ='$id'";
+		$result = $conn->query($status_sql);
 		$conn->close();
 	}
 
@@ -237,7 +246,7 @@ if ($do_action == "working_details_form_show") {
 	while ($row = $result2->fetch_object()) {
 		$services[] = $row->service;
 	}
-	$sql3 = "SELECT name FROM employees";
+	$sql3 = "SELECT name FROM employees where status = 1 order by name asc";
 	$employees;
 	$result3 = $conn->query($sql3);
 	while ($row = $result3->fetch_object()) {
@@ -365,7 +374,7 @@ if ($do_action == "show_working_details") {
 
 		if ($row->refund_amount > 0) $totalAmount  = $totalAmount - $row->refund_amount;
 		$working_details[$couter] = $row;
-		$working_details[$couter]->payments = $wPay;		
+		$working_details[$couter]->payments = $wPay;
 		$working_details[$couter]->total_amount = number_format($totalAmount,2,".","");
 		$couter++;
 	}
@@ -663,7 +672,7 @@ if ($do_action == "delete_cashier_report") {
 }
 // Sales report section
 if ($do_action == "get_sales_report") {
-	$non_taxable_service = array("Acupuncture", "Osteopath", "NON RMT", "NONRMT Couple", "NO RMT PKG", "NON RMT MM");
+	$non_taxable_service = array("Acupuncture","NON RMT", "NONRMT Couple", "NO RMT PKG", "NON RMT MM");
 	$tax_rate = 13;
 	$start_date = $data->start_date;
 	$end_date = $data->end_date;
@@ -694,14 +703,14 @@ if ($do_action == "get_sales_report") {
 				$total_tips += $tips_amount = $row1['tips_amount'];
 				array_push($working_details_array, $row1['working_details_id']);
 			}
-			$refund_amount = $total_amt = 0;
+			$refund_amount = $total_tax_amt = 0;
 			if ($row1['refund_amount'] > 0) $refund_amount = $row1['refund_amount'];
-			if (in_array($row1['service'], $non_taxable_service)) {
+			if (in_array($row1['service'], $non_taxable_service) || $row1['method_id'] == 4) {
 				$nt_gross_sale += $row1['amount'] - $refund_amount;
 			} else {
-				$total_amt = $row1['amount'] - $refund_amount;
-				$gross_sale += $total_amt;
-				$tax_amount += ($total_amt / 100) * $tax_rate;
+				$total_tax_amt = $row1['amount'] - $refund_amount;
+				$gross_sale += $total_tax_amt;
+				$tax_amount += ($total_tax_amt / 100) * $tax_rate;
 			}
 			if ($row1['method_id'] == 4) { // cash amount calculation
 				$cash_amount += $row1['amount'];
@@ -746,7 +755,7 @@ if ($do_action == "get_wage_report") {
 	echo json_encode($funRes);
 }
 if ($do_action == "get_wage_report_master") {
-	$sql =  "SELECT id,name FROM employees order by name asc";
+	$sql =  "SELECT id,name FROM employees where status = 1 order by name asc";
 	$result = $conn->query($sql);
 	$emp_lists = array();
 	while ($row = $result->fetch_assoc()) {
@@ -917,7 +926,7 @@ function verifyToken($token) {
 //   echo "Error creating table: " . $conn->error;
 // }
 // $conn->close();
-function getWageReport ($conn,$from_date="",$to_date="",$employee_name="",$search_location="",$search_client_name="") {
+function getWageReport($conn,$from_date="",$to_date="",$employee_name="",$search_location="",$search_client_name="") {
 	$percentage_of_tips = 97;
 	$hst_percentage = 13;
 	$where = "";
@@ -931,7 +940,7 @@ function getWageReport ($conn,$from_date="",$to_date="",$employee_name="",$searc
 	$sql4 = "SELECT count(distinct a.booking_date) as no_of_working_day FROM working_details as a WHERE '$employee_name' in (a.rmt_name,a.masseuse_name) $where limit 1";
 	$qry4 = $conn->query($sql4);
 	$no_of_working_days = $qry4->fetch_assoc()['no_of_working_day'];
-	$sql2 = "SELECT basic_payment,commission_rate,commission_after,commission_rate_masseuse,hst FROM employees WHERE name = '$employee_name' limit 1";
+	$sql2 = "SELECT id,basic_payment,commission_rate,commission_after,commission_rate_masseuse,hst FROM employees WHERE name = '$employee_name' limit 1";
 	$qry2 = $conn->query($sql2);
 	$row2 = $qry2->fetch_assoc();
 	//$basic_payment = $row2['basic_payment'] * $no_of_working_days;
@@ -939,6 +948,7 @@ function getWageReport ($conn,$from_date="",$to_date="",$employee_name="",$searc
 	$commission_rate = $row2['commission_rate'] / 60;  // divided 60 mins add the commission rate is hourly basic;
 	$commission_rate_masseuse = $row2['commission_rate_masseuse'] / 60;  // divided 60 mins add the commission rate is hourly basic;
 	$commission_after = $row2['commission_after'];
+	$emp_id = $row2['id'];
 	$loc_where = ($search_location != "") ? "where address= '$search_location'" : "";
 	$sql = "SELECT address FROM locations $loc_where";
 	$qry = $conn->query($sql);
@@ -977,7 +987,7 @@ function getWageReport ($conn,$from_date="",$to_date="",$employee_name="",$searc
 		if ($total_work_time == 0) $total_location = $total_location - 1;
 		$counter++;
 	}
-	//print_r($masseuse_array); exit();
+
 	$newarray = array();
 	foreach ($masseuse_array as $ar) {
 		foreach ($ar as $k => $v) {
@@ -988,12 +998,17 @@ function getWageReport ($conn,$from_date="",$to_date="",$employee_name="",$searc
 				$newarray[$v]['receipt_time'] = $newarray[$v]['receipt_time'] + $ar['receipt_time'];
 				$newarray[$v]['tips_amount'] = $newarray[$v]['tips_amount'] + $ar['tips_amount'];
 			} else if ($k == 'booking_date') {
+				$calculated_date = date("Y-m-d",strtotime($v));
+				$basicDetails = basicSalaryCalculation($emp_id,$calculated_date,$basic_payment,$conn);
+				$ar['basic_salary'] = $basicDetails['basic_pay_today'];
+				$ar['basic_remarks'] = $basicDetails['basic_remarks'];
 				$ar['work_time_effective'] = ($ar['work_time'] > $commission_after) ? $ar['work_time'] - $commission_after : '0';
 				$ar['commission_price'] = $ar['work_time_effective'] * $commission_rate_masseuse;
 				$newarray[$v] = $ar;
 			}
 		}
 	}
+
 	$commission_amount = 0;
 	$basicSalaryArr =  array();
 	$locCount = 0;
@@ -1004,19 +1019,29 @@ function getWageReport ($conn,$from_date="",$to_date="",$employee_name="",$searc
 		$bookingDate = $new['booking_date'];
 		$locQry = "SELECT a.location FROM working_details as a WHERE a.booking_date='$bookingDate' and (a.rmt_name = '$employee_name' or a.masseuse_name = '$employee_name') $where limit 1";
 
-
 		$locRaw = $conn->query($locQry);
-		$basicSalaryArr[$bookingDate] = trim($locRaw->fetch_assoc()['location']);
+		$basicSalaryArr[$bookingDate]['basic_salary'] = $new['basic_salary'];
+		$basicSalaryArr[$bookingDate]['location'] = trim($locRaw->fetch_assoc()['location']);
+
 		/* Basic Salary Calculation */
 		$commission_amount += $new['commission_price'];
 		$locCount++;
 	}
 
-	$NoOfDaysCalculation = array_count_values($basicSalaryArr);
-	$commission_receipt_amount = 0;
-	if ($total_location_receipt_time > 0) {
-		$commission_receipt_amount = $total_location_receipt_time * $commission_rate;
+	$mergedData = [];
+	foreach ($basicSalaryArr as $date => $info) {
+		$location = $info['location'];
+		if (!isset($mergedData[$location])) {
+			$mergedData[$location] = 0;
+		}
+		$mergedData[$location] += $info['basic_salary'];
 	}
+	//$NoOfDaysCalculation = array_count_values($basicSalaryArr);
+
+	// $commission_receipt_amount = 0;
+	// if ($total_location_receipt_time > 0) {
+	// 	$commission_receipt_amount = $total_location_receipt_time * $commission_rate;
+	// }
 	$counter3 = $total_salary_amount = 0;
 	$result = array();
 	$sql3 = "SELECT address FROM locations $loc_where";
@@ -1057,17 +1082,15 @@ function getWageReport ($conn,$from_date="",$to_date="",$employee_name="",$searc
 		$total_record = mysqli_num_rows($qry1);
 		$grand_total_record += $total_record;
 		if (($work_time != 0 || $receipt_time != 0) &&  $total_record > 0) {
-			$no_of_working_day = $NoOfDaysCalculation[$location_name];
-
-
+			//$no_of_working_day = $NoOfDaysCalculation[$location_name];
 			//$no_of_working_day = $basicPayQrRow['no_of_working_day'];
-
-			$grand_basic_payment += $basic_salary = $no_of_working_day * $basic_payment;
+			//$grand_basic_payment += $basic_salary = $no_of_working_day * $basic_payment;
+			$grand_basic_payment += $basic_salary = $mergedData[$location_name];
 			$pass_amount = 0;
 			$location_wise_commission = $dtm_commission_amt + ($receipt_time * $commission_rate);
 			$grand_total_commission += $location_wise_commission;
 			$location_hst_amount = ($row2['hst'] != "") ? ($basic_salary + $location_wise_commission) * ($hst_percentage / 100): 0;
-			$pass_amount = $basic_salary  + $location_wise_commission + $tips_amount + $location_hst_amount;
+			$pass_amount = $basic_salary  + $location_wise_commission;
 			$grand_hst_amount += $location_hst_amount;
 			$result[$counter3]['tips_amount'] = sprintf("%0.2f", $tips_amount);
 			//$result[$counter3]['tips_amount_card_charge'] = sprintf("%0.2f", $tips_amount_card_charge); // client not require this field
@@ -1083,8 +1106,9 @@ function getWageReport ($conn,$from_date="",$to_date="",$employee_name="",$searc
 	$working_details_print = array();
 	$couter_print = 0;
 	foreach ($newarray as $key => $row) {
-		$card_charge = $new_comm = 0;
+		$card_charge = $new_comm = $total_price_day_wise = 0;
 		$new_comm = $row['commission_price'] + ($row['receipt_time'] * $commission_rate);
+		$total_price_day_wise = $row['basic_salary'] + $row['tips_amount'] + $new_comm;
 		$card_charge = $row['tips_amount'] * ((100 - $percentage_of_tips) / 100);
 		$working_details_print[$couter_print] = $row;
 		$working_details_print[$couter_print]['work_time'] = ($row['work_time']) ? $row['work_time'] : 0;
@@ -1092,16 +1116,19 @@ function getWageReport ($conn,$from_date="",$to_date="",$employee_name="",$searc
 		$working_details_print[$couter_print]['card_charge'] = sprintf("%0.2f", ($card_charge));
 		$working_details_print[$couter_print]['receipt_hour'] = $row['receipt_time']/60 ;
 		$working_details_print[$couter_print]['work_hour'] = $row['work_time']/60;
-		$working_details_print[$couter_print]['commission_price'] = $new_comm;
-		$working_details_print[$couter_print]['basic_payment'] = sprintf("%0.2f", ($row2['basic_payment']));
-		$working_details_print[$couter_print]['total_price_day_wise'] = $row2['basic_payment'] + $row['tips_amount'] + $new_comm;
+		$working_details_print[$couter_print]['commission_price'] = sprintf("%0.2f", ($new_comm));
+		$working_details_print[$couter_print]['basic_payment'] = $row['basic_salary'];
+		$working_details_print[$couter_print]['total_price_day_wise'] = sprintf("%0.2f", ($total_price_day_wise));
+		$working_details_print[$couter_print]['basic_remarks'] = $row['basic_remarks'];
 		$couter_print++;
 	}
 	array_multisort($working_details_print, SORT_ASC, $newarray);
 	/************* for print ************** */
-	if ($grand_total_record > 0) $total_salary_amount = $grand_total_commission + $grand_basic_payment + $grand_tatal_tips + $grand_hst_amount;
-	else $total_salary_amount = 0;
-	$combined_array = array("wage_reports" => $result, "total_salary_amount" => sprintf("%0.2f", $total_salary_amount),"working_details_print" => $working_details_print,"grand_total_commission"=>$grand_total_commission,"grand_tatal_tips" => $grand_tatal_tips);
+	$total_salary_amount = 0;
+	if ($grand_total_record > 0) {
+		$total_salary_amount = $grand_total_commission + $grand_basic_payment + $grand_tatal_tips + $grand_hst_amount;
+	}
+	$combined_array = array("wage_reports" => $result, "total_salary_amount" => sprintf("%0.2f", $total_salary_amount),"working_details_print" => $working_details_print,"grand_total_commission"=>$grand_total_commission+$grand_basic_payment,"grand_tatal_tips" => number_format($grand_tatal_tips,2,".",""));
 	return $combined_array;
 }
 
@@ -1475,7 +1502,8 @@ if($do_action == "fetch_sidebar") {
            	<li><a href="'.$base_url.'cashiers-daily-report.php">Cashiers Daily Wage</a></li>
            	<li><a href="'.$base_url.'sales-data.php">Sales Data</a></li>
            	<li><a href="'.$base_url.'wage-report.php">Wage Report</a></li>
-			<li><a href="'.$base_url.'configuration.php">Configuration</a></li>
+				<li><a href="'.$base_url.'configuration.php">Configuration</a></li>
+				<li><a href="'.$base_url.'basic-pay-deduction.php">Deductions</a></li>
            	<li><a href="javascript:void(0)" onclick="logout()">Logout</a></li>
         </ul>';
 	} else if ($user_type == 2) {
@@ -1492,3 +1520,141 @@ if($do_action == "fetch_sidebar") {
 	}
 	echo $text; exit();
 }
+
+// Deductions Section
+if ($do_action == "basic_pay_deduction_form_show") {
+	$payId = $data->payId;
+
+	$sql = "SELECT id,name,basic_payment FROM employees where status = 1";
+	$empLists = array();
+	$result = $conn->query($sql);
+	while ($row = $result->fetch_object()) {
+		$empLists[] = $row;
+	}
+
+	$payList = array('pay_deduction_date' => "",'employee_id' => "",'pay_id' => "",		'pay_deduction_percentage' => "");
+
+	if($payId != null ) {
+		$sql1 = "SELECT pay_deduction_date,employee_id,pay_id,pay_deduction_percentage,pay_deduction_remarks FROM pay_deduction where bit_deleted_flag = 0 and pay_id = $payId limit 1";
+		$result1 = $conn->query($sql1);
+		$payList = $result1->fetch_object();
+	}
+	$combined_array = array("empLists" => $empLists,"payList"=>$payList);
+	echo json_encode($combined_array);
+	$conn->close();
+	exit();
+}
+if ($do_action == "add_basic_pay_deduction") {
+	$payId = $data->payId;
+
+	$basicPayDate = date("Y-m-d",strtotime($data->basicPayDate));
+	$basicEmpName = $data->basicEmpName;
+	$basicPayPercentage = $data->basicPayPercentage;
+	$payDeductionRemarks = $data->payDeductionRemarks;
+	if(isset($payId) && $payId > 0 ) {
+		$sql = "UPDATE pay_deduction SET pay_deduction_date='$basicPayDate',employee_id=$basicEmpName,pay_deduction_percentage='$basicPayPercentage',pay_deduction_remarks = '$payDeductionRemarks' WHERE pay_id = $payId";
+	} else {
+		$sql = "INSERT INTO pay_deduction (pay_deduction_date, employee_id, pay_deduction_percentage, pay_deduction_remarks) VALUES ('$basicPayDate', '$basicEmpName', '$basicPayPercentage','$payDeductionRemarks')";
+	}
+	$result = $conn->query($sql);
+	$conn->close();
+}
+
+if ($do_action == "show_basic_pay_deduction") {
+	$per_page_record = $data->per_page_record;
+	$page = $data->page;
+	$payId = $data->searchObj->pay_id;
+	$empId = $data->searchObj->emp_id;
+	$from_date = $data->searchObj->from_date;
+	$to_date = $data->searchObj->to_date;
+	$page_count = ($data->page - 1) * $per_page_record;
+	$where = "where a.bit_deleted_flag=0";
+	if ($data->searchObj->payId) $where .= " and a.pay_id = $payId";
+	if ($data->searchObj->emp_id) $where .= " and a.employee_id = $empId";
+	if ($data->searchObj->from_date && $data->searchObj->to_date) $where .= " and a.pay_deduction_date BETWEEN '$from_date' AND '$to_date'";
+	$sql = "SELECT a.pay_id,a.pay_deduction_date,b.name as emp_name,a.pay_deduction_percentage,a.pay_deduction_remarks FROM pay_deduction as a LEFT JOIN employees AS b ON a.employee_id = b.id $where order by a.pay_id desc limit $page_count,$per_page_record";
+	$payList = array();
+	$result = $conn->query($sql);
+	if($result->num_rows > 0 ) {
+		while ($row = $result->fetch_object()) {
+			$res = $row;
+			$res->pay_deduction_date = date("d F Y", strtotime($row->pay_deduction_date));
+			$payList[] = $res;
+		}
+	}
+
+	$sql2 = "SELECT a.pay_id FROM pay_deduction as a $where";
+	$total_record = 0;
+	$result2 = $conn->query($sql2);
+	$total_record = mysqli_num_rows($result2);
+
+	$emp_sql = "SELECT id,name FROM employees where status = 1";
+	$emp_qry = $conn->query($emp_sql);
+	$emp_res = array();
+	while ($emp_row = $emp_qry->fetch_object()) {
+		$emp_res[] = $emp_row;
+	}
+
+
+	$combined_array = array("pay_lists" => $payList, "total_record" => $total_record, "payload" => $data,"employees"=>$emp_res);
+	echo json_encode($combined_array);
+	$conn->close();
+}
+
+if ($do_action == "basic_pay_deduction_edit_form_show") {
+	$cashierId = $data->cashierId;
+	$sql = "SELECT * FROM cashiers_report WHERE id = '$cashierId' limit 1";
+	$result = $conn->query($sql);
+	$cashier_report = [];
+	while ($row = $result->fetch_object()) {
+		$cashier_report = $row;
+	}
+	$sql1 = "SELECT * FROM cashiers";
+	$names = array();
+	$result1 = $conn->query($sql1);
+	while ($row1 = $result1->fetch_object()) {
+		$names[] = $row1;
+	}
+	$addresses;
+	$sql1 = "SELECT address FROM locations";
+	$result1 = $conn->query($sql1);
+	while ($row1 = $result1->fetch_object()) {
+		$addresses[] = $row1->address;
+	}
+	$combined_array = array("names" => $names, "cashier_report" => $cashier_report, "addresses" => $addresses);
+	$json = json_encode($combined_array);
+	echo $json;
+	$conn->close();
+}
+if ($do_action == "update_basic_pay_deduction") {
+	$cashierReportId = $data->cashierReportId;
+	$date = $data->date;
+	$location_name = $data->location_name;
+	$cashier_id = $data->cashier_name;
+	$start_time = $data->start_time;
+	$end_time = $data->end_time;
+	$bonus = $data->bonus;
+
+	$result = $conn->query($sql);
+	$conn->close();
+}
+if ($do_action == "delete_basic_pay_deduction") {
+	$payId = $data->payId;
+	$sql = "DELETE FROM pay_deduction WHERE pay_id = $payId";
+	$result = $conn->query($sql);
+	$conn->close();
+}
+
+function basicSalaryCalculation($emp_id,$calculated_date,$basic_payment,$conn) {
+	$basicSalarySql = "select pay_deduction_percentage,pay_deduction_remarks from pay_deduction where employee_id = ".$emp_id." and pay_deduction_date = '".$calculated_date."' and bit_deleted_flag = 0 order by pay_id desc limit 1";
+	$basicSalaryQry = $conn->query($basicSalarySql);
+	$basicSalaryRes = $basicSalaryQry->fetch_assoc();
+	$total_deduction_amount = trim($basicSalaryRes['pay_deduction_percentage']);
+	$pay_deduction_remarks = $basicSalaryRes['pay_deduction_remarks'];
+	//$total_deduction_amount = ($basic_percentage / 100) * $basic_payment;
+	$basic_pay_today = $basic_payment - $total_deduction_amount;
+	$basicDetails['basic_pay_today'] = $basic_pay_today;
+	$basicDetails['basic_remarks'] = $pay_deduction_remarks;
+	return $basicDetails;
+}
+

@@ -82,7 +82,7 @@ main {
     padding: 6px 9px;
     color: #fff;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 14px;
     border-radius: 4px;
 }
 
@@ -116,9 +116,14 @@ main {
 }
 
 .ktm_table th, .ktm_table td {
-    padding: 4px;
+    padding: 2px;
     border: 1px solid #bbb;
     text-align: center;
+    font-size: 14px;
+}
+
+.ktm_table tr:hover {
+    background-color: #00800085;
 }
 
 .employees table {
@@ -353,7 +358,7 @@ main {
     overflow: hidden;
 }
 
-#filter_cashier_daily_wage, #filter_working_details {
+#filter_cashier_daily_wage, #filter_working_details, #filter_deduction {
     width: 30px;
     position: relative;
     top: 9px;
@@ -389,7 +394,6 @@ main {
 
 /************working details start *****************/
 
-
 #cdw-filter-working-details {
     background-color: #eee;
     margin-top: 16px;
@@ -406,9 +410,6 @@ main {
     padding: 8px;
 }
 
-#filter_cashier_daily_wage.fbtn-act {
-    filter: opacity(1);
-}
 
 #cdw-filter-working-details.cdw-filter-act {
     display: block;
@@ -426,9 +427,36 @@ main {
     margin-left: 5px;
     margin-top: 12px;
     display: inline-block;
-}.view_green_btn {    border: 0;    background-color: #008000;    padding: 6px 9px;    color: #fff;    cursor: pointer;    font-size: 13px;    text-decoration: none;    border-radius: 6px;    margin-left: 7px;}
+}
+.view_green_btn {
+    border: 0;
+    background-color: #008000;
+    padding: 6px 9px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 13px;
+    text-decoration: none;
+    border-radius: 6px;
+    margin-left: 7px;
+}
 
 #treatment_note_form input[type="radio"] {
     width: auto;
     margin: 6px;
+}
+
+.employees_table {
+    overflow: auto;
+}
+
+.mt-15 {
+    margin-top:15px;
+}
+
+.pl-20 {
+    padding-left: 20px;
+}
+
+.pl-10 {
+    padding-left: 10px;
 }

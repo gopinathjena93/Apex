@@ -1,6 +1,6 @@
 const url = window.location.pathname;
 const urlParts = url.split('/');
-const pageURL = '/'+ urlParts[urlParts.length - 1];console.log('pageURL',pageURL);
+const pageURL = '/'+ urlParts[urlParts.length - 1];
 const cashierPermissionUrl = ["/working-details.php", "/cashiers-daily-report.php", "/treatment-note.php","/"];
 const EmployeePermissionUrl = ["/working-details.php","/treatment-note.php","/"];
 checkUserLoginStatus();
@@ -322,10 +322,12 @@ if (pageURL == "/employees.php") {
         <th>Rcpt. Rate</th>\
         <th>Comm. Rate</th>\
         <th>Comm. After</th>\
+        <th>Status</th>\
         <th colspan="2">Action</th>\
       </tr>\
       ';
 			for (let x in employeesObj) {
+				const statusText = (employeesObj[x].status == 1 ) ? "Active" : "In Active";
 				text += '\
           <tr>\
           <td>' + employeesObj[x].name + '</td> \
@@ -339,6 +341,7 @@ if (pageURL == "/employees.php") {
           <td>' + employeesObj[x].commission_rate + '</td> \
           <td>' + employeesObj[x].commission_rate_masseuse + '</td> \
           <td>' + employeesObj[x].commission_after + '</td> \
+          <td id="empStatus_'+employeesObj[x].id+'"><button  class="action_btn" onClick="changeStatus('+employeesObj[x].id+','+employeesObj[x].status+')">'+ statusText +'</button></td> \
           <td><button class="action_btn" onclick="employeeEdit(this);" data-id="'+ employeesObj[x].id + '">Edit</button></td> \
           <td><button class="action_btn" onclick="employeeDelete(this);" data-id="'+ employeesObj[x].id + '">Delete</button></td>\
           </tr>\
@@ -346,6 +349,28 @@ if (pageURL == "/employees.php") {
 			}
 			text += '</table>'
 			document.getElementById("data").innerHTML = text;
+		}
+	}
+
+	function changeStatus (empId,status) {
+		let newStatus = (status == 1) ? 0 : 1;
+		if(confirm("Are you sure to change the status?")) {
+			let xhr = new XMLHttpRequest();
+			let jsonData = {
+				id: empId,
+				status : newStatus,
+				do_action: "update_employee_status"
+			}
+			let jsonString = JSON.stringify(jsonData);
+			xhr.open("POST", "functions.php", true);
+			xhr.setRequestHeader("Content-type", "application/json");
+			xhr.send(jsonString);
+			xhr.onload = function () {
+				const statusText = (newStatus == 1 ) ? "Active" : "In Active";
+				const buttonElememt = document.getElementById('empStatus_'+empId);
+				const buttonText = `<button class="action_btn" onClick="changeStatus(${empId},${newStatus})">${statusText}</button>`;
+				buttonElememt.innerHTML = buttonText;
+			}
 		}
 	}
 }
@@ -784,7 +809,7 @@ if (pageURL == "/working-details.php") {
           		';
 			}
 			text += '\
-	        <label>Refund Amount:</label><br />\
+	        <label>Discount Amount:</label><br />\
 	        <input type="number" name="refund_amount" min="1" onkeyup="negativeValueCheck(this)" /><br />\
 	        <label>Tips:</label><br />\
 	        <input type="text" name="tips_amount" /><br />\
@@ -1031,7 +1056,7 @@ if (pageURL == "/working-details.php") {
           <strong>Eclaim Code: </strong>' + workingDetailsObj.working_details[x].eclaim_code + '<br />';
 				}
 			text += '\
-        	<strong>Refund : </strong>' + workingDetailsObj.working_details[x].refund_amount + '<br />\
+        	<strong>Discount : </strong>' + workingDetailsObj.working_details[x].refund_amount + '<br />\
         	<strong>Total Amount : </strong>' + workingDetailsObj.working_details[x].total_amount + '<br />';
 			const login_info = JSON.parse(sessionStorage.getItem("login_info"));
 			if((login_info.userType == 2 & workingDetailsObj.working_details[x].color_pallet != "#ffff0063") || login_info.userType == 1) {
@@ -1184,7 +1209,7 @@ if (pageURL == "/working-details.php") {
             ';
 			}
 			text += '\
-        <label>Refund Amount:</label><br />\
+        <label>Discount Amount:</label><br />\
         <input type="text" name="refund_amount" value="' + workingObj.working_details.refund_amount + '" onkeyup="negativeValueCheck(this)"/><br />\
         <label>Tips:</label><br />\
         <input type="text" name="tips_amount" value="' + workingObj.working_details.tips_amount + '"/><br />\
@@ -1612,26 +1637,26 @@ if (pageURL == "/sales-data.php") {
 			text = '<div id="working-details">';
 			for (let x in saleObj.sale_reports) {
 				text += '<div>\
-      <strong>Location: </strong>'+ saleObj.sale_reports[x].location_name + '<br>\
-      <strong>Total Non Taxable Sales:</strong> $'+ saleObj.sale_reports[x].nt_gross_sale + '<br>\
-      <strong>Total Taxable Sales:</strong> $'+ saleObj.sale_reports[x].gross_sale + '<br>\
-      <strong>Total Sales:</strong> $'+ saleObj.sale_reports[x].net_sales + '<br>\
-      <strong>Total Tax:</strong> $'+ saleObj.sale_reports[x].tax_amount + '<br>\
-      <strong>Cash Amount:</strong> $'+ saleObj.sale_reports[x].cash_amount + '<br>\
-      <strong>Tips Amount:</strong> $'+ saleObj.sale_reports[x].tips_amount + '<br>\
-      <strong>Net Sales (Excluding Tax):</strong> $'+ saleObj.sale_reports[x].net_sales_excluding_tax + '<br>\
-      </div>\
+      		<strong>Location: </strong>'+ saleObj.sale_reports[x].location_name + '<br>\
+				<strong>Total Taxable Sales:</strong> $'+ saleObj.sale_reports[x].gross_sale + '<br>\
+      		<strong>Total Non Taxable Sales:</strong> $'+ saleObj.sale_reports[x].nt_gross_sale + '<br>\
+				<strong>Cash Amount:</strong> $'+ saleObj.sale_reports[x].cash_amount + '<br>\
+				<strong>Tips Amount:</strong> $'+ saleObj.sale_reports[x].tips_amount + '<br>\
+      		<strong>Total Sales:</strong> $'+ saleObj.sale_reports[x].net_sales + '<br>\
+      		<strong>Total Tax:</strong> $'+ saleObj.sale_reports[x].tax_amount + '<br>\
+      		<strong>Net Sales (Excluding Tax):</strong> $'+ saleObj.sale_reports[x].net_sales_excluding_tax + '<br>\
+      	</div>\
       ';
 			}
 			text += '</div>';
 			text += '<div class="total_amount">\
       <h3>Sales Data (Including All Locations)</h3>\
+		<strong>Total Taxable Sales:</strong> $'+ saleObj.total_res.total_gross_sale + '<br>\
       <strong>Total Non Taxable Sales: </strong>'+ saleObj.total_res.total_nt_gross_sale + '<br>\
-      <strong>Total Taxable Sales:</strong> $'+ saleObj.total_res.total_gross_sale + '<br>\
-      <strong>Total Tax:</strong> $'+ saleObj.total_res.total_tax_amount + '<br>\
+		<strong>Total Cash Amount:</strong> $'+ saleObj.total_res.total_cash_amount + '<br>\
+		<strong>Total Tips Amount:</strong> $'+ saleObj.total_res.total_tips_amount + '<br>\
       <strong>Total Sales:</strong> $'+ saleObj.total_res.total_net_sales + '<br>\
-      <strong>Total Cash Amount:</strong> $'+ saleObj.total_res.total_cash_amount + '<br>\
-      <strong>Total Tips Amount:</strong> $'+ saleObj.total_res.total_tips_amount + '<br>\
+		<strong>Total Tax:</strong> $'+ saleObj.total_res.total_tax_amount + '<br>\
       <strong>Net Sales (Excluding Tax):</strong> $'+ saleObj.total_res.total_net_sales_excluding_tax + '<br>\
       </div>';
 			document.getElementById("data").innerHTML = text;
@@ -1713,7 +1738,9 @@ if (pageURL == "/wage-report.php") {
 						<th>Commission Amount</th>\
 						<th>Basic Payment</th>\
 						<th>Total Pay</th>\
+						<th>Remarks</th>\
 					</tr>';
+					let message = null;
 					for (let z in wageObj.working_details_print) {
 						let commissionPrice = (wageObj.working_details_print[z].commission_price != undefined )? wageObj.working_details_print[z].commission_price:0;
 						text += '<tr>\
@@ -1725,7 +1752,14 @@ if (pageURL == "/wage-report.php") {
 						<td>'+ wageObj.working_details_print[z].receipt_time + ' ('+ wageObj.working_details_print[z].receipt_hour +')</td>\
 						<td>'+ commissionPrice + '</td>\
 						<td>'+ wageObj.working_details_print[z].basic_payment + '</td>\
-						<td>'+ wageObj.working_details_print[z].total_price_day_wise + '</td></tr>';
+						<td>'+ wageObj.working_details_print[z].total_price_day_wise + '</td>';
+						message = wageObj.working_details_print[z].basic_remarks;
+						if(message != null && message != '' && message != undefined) {
+							text +='<td><button class="action_btn" onClick="showRemarks(\'' + wageObj.working_details_print[z].basic_remarks + '\')">View</button></td>';
+						} else {
+							text += '<td></td>'
+						}
+						text +='</tr>';
 					}
 				text +='</tbody>\
 				</table>\
@@ -1738,16 +1772,16 @@ if (pageURL == "/wage-report.php") {
 				<strong>Commission  :</strong>$'+ wageObj.wage_reports[x].commission_salary + '<br>\
 				<strong>Tips:</strong>$'+ wageObj.wage_reports[x].tips_amount + '<br>\
 				<strong>HST Amount:</strong>$'+ wageObj.wage_reports[x].location_hst_amount + '<br>\
-				<strong>Basic+Commission+Tips+HST:</strong>$'+ wageObj.wage_reports[x].pass_amount + '<br>\
+				<strong>Basic+Commission:</strong>$'+ wageObj.wage_reports[x].pass_amount + '<br>\
 				</div>\
 				';
 			}
 			text += '</div>';
 			text += '<div class="total_amount">\
 			<h3>Total Salary from all Locations:</h3>\
-			<strong>Total Commission : </strong>$'+ wageObj.grand_total_commission + '<br>\
+			<strong>Total Basic + Commission: </strong>$'+ wageObj.grand_total_commission + '<br>\
 			<strong>Total Tips : </strong>$'+ wageObj.grand_tatal_tips + '<br>\
-			<strong>Total Amount : </strong> $'+ wageObj.total_salary_amount + '<br>\
+			<strong>Total Amount (Basic + Commission + Tips + HST) : </strong> $'+ wageObj.total_salary_amount + '<br>\
 			</div>\
 			';
 			text += '<button style="margin-top:15px" class="action_btn" type="button" onclick="printEmpReport()">Print</button>';
@@ -1765,7 +1799,9 @@ if (pageURL == "/wage-report.php") {
 						<th>Commission Amount</th>\
 						<th>Basic Payment</th>\
 						<th>Total Pay</th>\
+						<th>Remarks</th>\
 					</tr>';
+
 					for (let z in wageObj.working_details_print) {
 						let commissionPrice = (wageObj.working_details_print[z].commission_price != undefined )? wageObj.working_details_print[z].commission_price:0;
 						text += '<tr>\
@@ -1777,7 +1813,14 @@ if (pageURL == "/wage-report.php") {
 						<td>'+ wageObj.working_details_print[z].receipt_time +' ('+ wageObj.working_details_print[z].receipt_hour +')</td>\
 						<td>'+ commissionPrice + '</td>\
 						<td>'+ wageObj.working_details_print[z].basic_payment + '</td>\
-						<td>'+ wageObj.working_details_print[z].total_price_day_wise + '</td></tr>';
+						<td>'+ wageObj.working_details_print[z].total_price_day_wise + '</td>';
+						message = wageObj.working_details_print[z].basic_remarks;
+						if(message != null && message != '' && message != undefined) {
+							text +='<td>'+ wageObj.working_details_print[z].basic_remarks + '</td>';
+						} else {
+							text +='<td></td>';
+						}
+						text += '</tr>';
 					}
 				text +='</tbody>\
 			</table>';
@@ -1789,19 +1832,25 @@ if (pageURL == "/wage-report.php") {
 				<strong>Commission  :</strong>$'+ wageObj.wage_reports[y].commission_salary + '<br>\
 				<strong>Tips:</strong>$'+ wageObj.wage_reports[y].tips_amount + '<br>\
 				<strong>HST Amount:</strong>$'+ wageObj.wage_reports[y].location_hst_amount + '<br>\
-				<strong>Basic+Commission+Tips+HST:</strong>$'+ wageObj.wage_reports[y].pass_amount + '<br>\
+				<strong>Basic+Commission:</strong>$'+ wageObj.wage_reports[y].pass_amount + '<br>\
 				</div>\
 				';
 			}
 			text += '</div>';
 			text += '<div style="width: 100%; background-color: #ddd; padding: 1%;">\
 			<h3>Total Salary from all Locations:</h3>\
-			<strong>Total Commission : </strong>$'+ wageObj.grand_total_commission + '<br>\
+			<strong>Total Basic + Commission : </strong>$'+ wageObj.grand_total_commission + '<br>\
 			<strong>Total Tips : </strong>$'+ wageObj.grand_tatal_tips + '<br>\
-			<strong>Total Amount : </strong> $'+ wageObj.total_salary_amount + '<br>\
+			<strong>Total Amount (Basic + Commission + Tips + HST) : </strong> $'+ wageObj.total_salary_amount + '<br>\
 			</div>';
 			text +='</div>';
 			document.getElementById("data").innerHTML = text;
+			var btn = document.getElementById("myBtn");
+			var span = document.getElementsByClassName("close")[0];
+			span.onclick = function() {
+				const modal = document.getElementById("myModal");
+				modal.style.display = "none";
+			}
 		}
 	}
 	function getEmployeeMaster() {
@@ -1915,6 +1964,13 @@ if (pageURL == "/wage-report.php") {
 		}
 	}
 	getEmployeeMaster();
+}
+function showRemarks(message=null) {
+	if(message != null && message != '' && message != undefined) {
+		const modal = document.getElementById("myModal");
+		modal.style.display = "block";
+		document.getElementById("remarks").innerHTML = message;
+	}
 }
 
 function fetchSideBar() {
@@ -2219,4 +2275,257 @@ if (pageURL == "/treatment-note.php") {
 			}
 		}
 	}
+}
+
+//  Deductions Section
+if (pageURL == "/basic-pay-deduction.php") {
+	let getsearchCashObj = JSON.parse(sessionStorage.getItem("searchCashObj"));
+	if (getsearchCashObj != null) getsearchCashObj = getsearchCashObj;
+	else getsearchCashObj = {};
+
+	window.addEventListener("load", showDeductionReport("", getsearchCashObj));
+	function showDeductionReport(page_number, searchObj = {}) {
+		let per_page_record, total_record, page, total_pages;
+		per_page_record = 20;
+		if (page_number == "") {
+			jsonData = {
+				do_action: "show_basic_pay_deduction",
+				per_page_record: per_page_record,
+				page: 1,
+				searchObj: searchObj
+			}
+		} else {
+			const Pagination = JSON.parse(sessionStorage.getItem("Pagination"));
+			jsonData = {
+				do_action: "show_basic_pay_deduction",
+				per_page_record: Pagination.per_page_record,
+				page: Pagination.page,
+				searchObj: searchObj
+			}
+		}
+		let xhr = new XMLHttpRequest();
+		let jsonString = JSON.stringify(jsonData);
+		xhr.open("POST", "functions.php", true);
+		xhr.setRequestHeader("Content-type", "application/json");
+		xhr.send(jsonString);
+		xhr.onload = function () {
+			let payListObj = JSON.parse(this.responseText);
+			if (page_number == "") {
+				total_record = payListObj.total_record;
+				page = 1;
+				per_page_record = per_page_record;
+				const newPagination = { per_page_record: per_page_record, page: page, total_record: total_record }
+				sessionStorage.setItem("Pagination", JSON.stringify(newPagination));
+			} else {
+				const Pagination = JSON.parse(sessionStorage.getItem("Pagination"));
+				total_record = Pagination.total_record;
+				per_page_record = Pagination.per_page_record;
+				page = Pagination.page;
+			}
+			total_pages = Math.ceil(total_record / per_page_record);
+			let text = '\
+      <div id="cdw-filter"> \
+        <select id="search_emp_name">';
+			text += '<option value=""> All Employees </option>';
+			for (let x in payListObj.employees) {
+				const selectedValue = (payListObj.employees[x].id == payListObj.payload.searchObj.cashier_id) ? 'selected' : '';
+				text += '<option  ' + selectedValue + ' value="' + payListObj.employees[x].id + '">' + payListObj.employees[x].name + '</option>';
+			}
+			text += '\
+        </select>\
+        <input type="date" id="search_from_date" value="'+ payListObj.payload.searchObj.from_date + '" >\
+        <input type="date" id="search_to_date" value="'+ payListObj.payload.searchObj.to_date + '">\
+        <button onclick="searchDeductionButton()" class="action_btn">Search</button>\
+      </div> \
+      <table class="ktm_table mt-15">\
+      <tr>\
+        <th>Date</th>\
+        <th>Employee Name</th>\
+        <th>Deduction Amount</th>\
+        <th>Remarks</th>\
+        <th colspan= "2"> Action</th>\
+      </tr>\
+      ';
+			if (payListObj.pay_lists.length > 0) {
+				for (let x in payListObj.pay_lists) {
+					text += '\
+            <tr>\
+            <td>'+ payListObj.pay_lists[x].pay_deduction_date + '</td> \
+            <td>' + payListObj.pay_lists[x].emp_name + '</td> \
+            <td>' + payListObj.pay_lists[x].pay_deduction_percentage + '</td> \
+            <td>' + payListObj.pay_lists[x].pay_deduction_remarks + '</td> \
+            <td><button class="action_btn" onclick="basicPayDeductionFormShow('+payListObj.pay_lists[x].pay_id+');">Edit</button></td>\
+            <td><button class="action_btn" onclick="basicPayDeductioDelete('+payListObj.pay_lists[x].pay_id+');" data-id="'+ payListObj.pay_lists[x].pay_id + '">Delete</button></td>\
+            </tr>\
+          ';
+				}
+			} else {
+				text += '\
+          <tr>\
+            <td colspan="7" style="text-align: center;font-weight: bold;">No Record Found</td>\
+          </tr>\
+          ';
+			}
+			text += '</table>';
+			text += `<div class="pagination">`;
+			let PageLink = ``;
+			if (page >= 2) {
+				PageLink = `<button onclick="PaginationDeduction(${parseInt(page) - 1})" >  Prev </button>`;
+			}
+			for (i = 1; i <= total_pages; i++) {
+				if (i == page) {
+					PageLink += `<button  onclick="PaginationDeduction(${i})" class = 'active' >${i}</button>`;
+				}
+				else {
+					PageLink += `<button  onclick="PaginationDeduction(${i})" >${i}</button>`
+				}
+			};
+			if (page < total_pages) {
+				PageLink += `<button onclick="PaginationDeduction(${parseInt(page) + 1})">  Next </button>`;
+			}
+			text += PageLink;
+			text += `</div>`;
+			document.getElementById("data").innerHTML = text;
+		}
+		document.getElementById("filter_deduction").addEventListener("click", function () {
+			this.classList.toggle("fbtn-act");
+			document.getElementById("cdw-filter").classList.toggle("cdw-filter-act");
+		});
+	}
+
+	function basicPayDeductionFormShow(payId=null) {
+		let xhr = new XMLHttpRequest();
+		let jsonData = {
+			payId:payId,
+			do_action: "basic_pay_deduction_form_show"
+		}
+		let jsonString = JSON.stringify(jsonData);
+		xhr.open("POST", "functions.php", true);
+		xhr.setRequestHeader("Content-type", "application/json");
+		xhr.send(jsonString);
+
+		xhr.onload = function () {
+			let basicPayObj = JSON.parse(this.responseText);
+			const pay_deduction_percentage = (basicPayObj.payList.pay_deduction_percentage != undefined) ? basicPayObj.payList.pay_deduction_percentage : "";
+			const pay_deduction_remarks = (basicPayObj.payList.pay_deduction_remarks != undefined) ? basicPayObj.payList.pay_deduction_remarks : "";
+			let text = '\
+        <div id="cashier-report-action-form">\
+		  <input type="hidden" id="pay_id" value="'+payId+'" />\
+          <label>Date:</label><br />\
+          <input type="date" id="basic_pay_date" value="'+basicPayObj.payList.pay_deduction_date+'"/><br />\
+          <label>Employee Name:</label><br />\
+          <select id="basic_emp_name" onClick="calculateBasicPay()">';
+			 const empId = basicPayObj.payList.employee_id;
+			for (let x in basicPayObj.empLists) {
+				const empSelected = (basicPayObj.empLists[x].id == empId) ? 'selected' : '';
+				text += '<option value="' + basicPayObj.empLists[x].id + '" data-basicpay = "'+ basicPayObj.empLists[x].basic_payment+'" '+empSelected+' >' + basicPayObj.empLists[x].name + '</option>';
+			}
+			text += '\
+         </select><br />\
+         <label> Deduction Amount :</label><br />\
+			<input type="number" id="basic_pay_percentage" value="'+pay_deduction_percentage+'"/><br />\
+			<label> Remarks :</label><br />\
+			<input type="text" id="pay_deduction_remarks" value="'+pay_deduction_remarks+'" autocomplete="off"/><br />\
+			<label>Total Basic Pay Per Day :  <span id="total_basic_pay">0</span> </label><br>\
+         <button class="action_btn" onclick="basicPayDeductionAdd();">Submit</button>\
+        </div>\
+      ';
+			document.getElementById("data").innerHTML = text;
+			calculateBasicPay();
+		}
+	}
+	function basicPayDeductionAdd() {
+		let basicPayDate = document.getElementById("basic_pay_date").value;
+		let basicEmpName = document.getElementById("basic_emp_name").value;
+		let basicPayPercentage = parseInt(document.getElementById("basic_pay_percentage").value);
+		let payId = document.getElementById("pay_id").value;
+		let payDeductionRemarks = document.getElementById("pay_deduction_remarks").value;
+		let totalBasicPay = parseInt(document.getElementById("total_basic_pay").innerHTML);
+
+		if(!basicPayDate.trim()){
+			alert('Date is mandatory. Please provide a valid date.');
+			document.getElementById("basic_pay_date").focus(); return false;
+		}
+
+		if(!basicPayPercentage){
+			alert('Deduction Amount is mandatory. Please provide a valid amount.');
+			document.getElementById("basic_pay_percentage").focus(); return false;
+		}
+
+		if(basicPayPercentage > totalBasicPay ){
+			alert('Deduction Amount is not more than total basic pay. Please provide a valid amount.');
+			document.getElementById("basic_pay_percentage").focus(); return false;
+		}
+		let xhr = new XMLHttpRequest();
+		let jsonData = {
+			payId : payId,
+			basicPayDate: basicPayDate,
+			basicEmpName: basicEmpName,
+			basicPayPercentage: basicPayPercentage,
+			payDeductionRemarks:payDeductionRemarks,
+			do_action: "add_basic_pay_deduction"
+		}
+		let jsonString = JSON.stringify(jsonData);
+		xhr.open("POST", "functions.php", true);
+		xhr.setRequestHeader("Content-type", "application/json");
+		xhr.send(jsonString);
+		xhr.onload = function () {
+			window.location.reload();
+		}
+	}
+
+	function basicPayDeductioDelete(payId) {
+		let makeSure = confirm("Are you sure to permanently delete it?");
+		if (makeSure) {
+			let xhr = new XMLHttpRequest();
+			let jsonData = {
+				payId: payId,
+				do_action: "delete_basic_pay_deduction"
+			}
+			let jsonString = JSON.stringify(jsonData);
+			xhr.open("POST", "functions.php", true);
+			xhr.setRequestHeader("Content-type", "application/json");
+			xhr.send(jsonString);
+			xhr.onload = function () {
+				window.location.reload();
+			}
+		}
+	}
+	function PaginationCash(page_value) {
+		const Pagination = JSON.parse(sessionStorage.getItem("Pagination"));
+		newPagination = { ...Pagination, page: page_value }
+		sessionStorage.setItem("Pagination", JSON.stringify(newPagination));
+		const cashier_id = document.getElementById("search_cashier_name").value;
+		const search_from_date = document.getElementById("search_from_date").value;
+		const search_to_date = document.getElementById("search_to_date").value;
+		const param = { "cashier_id": cashier_id, "from_date": search_from_date, "to_date": search_to_date };
+		showCashiersReport(page_value, param);
+	}
+	function PaginationDeduction(page_value) {
+		const Pagination = JSON.parse(sessionStorage.getItem("Pagination"));
+		newPagination = { ...Pagination, page: page_value }
+		sessionStorage.setItem("Pagination", JSON.stringify(newPagination));
+		const emp_id = document.getElementById("search_emp_name").value;
+		const search_from_date = document.getElementById("search_from_date").value;
+		const search_to_date = document.getElementById("search_to_date").value;
+		const param = { "emp_id": emp_id, "from_date": search_from_date, "to_date": search_to_date };
+		showDeductionReport(page_value, param);
+	}
+	function searchDeductionButton() {
+		const emp_id = document.getElementById("search_emp_name").value;
+		const search_from_date = document.getElementById("search_from_date").value;
+		const search_to_date = document.getElementById("search_to_date").value;
+		const param = { "emp_id": emp_id, "from_date": search_from_date, "to_date": search_to_date };
+		sessionStorage.setItem("searchDeductionObj", JSON.stringify(param))
+		showDeductionReport("", param);
+		document.getElementById("filter_deduction").classList.remove("fbtn-act");
+	}
+	function calculateBasicPay () {
+		const element = document.getElementById('basic_emp_name');
+		let selectedOption = element.options[element.selectedIndex];
+		const basicPay = selectedOption.getAttribute('data-basicpay');
+		document.getElementById("total_basic_pay").innerHTML = basicPay;
+	}
+
+
 }
